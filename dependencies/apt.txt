@@ -1,3 +1,4 @@
 cmake
 g++
-
+libboost-all-dev
+libfmt-dev

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 
 #! CHANGE YOUR PROJECT NAME
 #  It is used as your project's main executable name. 
-set(PROJECT_NAME template)
+set(PROJECT_NAME fs_reader)
 project(${PROJECT_NAME} C CXX) # project(${PROJECT_NAME} C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -55,17 +55,17 @@ include(cmake/CompilerWarnings.cmake)
 ##########################################################
 
 #! Project main executable source compilation
-add_executable(${PROJECT_NAME} main.cpp
-				options_parser/options_parser.cpp options_parser/options_parser.h)
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS inc/*.h)
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-#! Put path to your project headers
-target_include_directories(${PROJECT_NAME} PRIVATE options_parser)
+find_package(fmt)
+target_link_libraries(${PROJECT_NAME} fmt::fmt)
 
-#! Add external packages
-# options_parser requires boost::program_options library
-find_package(Boost 1.71.0 COMPONENTS program_options system REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} Boost::program_options Boost::system)
+find_package(Boost REQUIRED COMPONENTS program_options)
+target_link_libraries(${PROJECT_NAME} Boost::program_options)
+
+target_include_directories(${PROJECT_NAME} PRIVATE inc)
 
 ##########################################################
 # Fixed CMakeLists.txt part
