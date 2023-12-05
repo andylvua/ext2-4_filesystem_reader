@@ -7,12 +7,11 @@
 
 #include <cstdint>
 #include <vector>
-#include "disk_image/disk_image_dump.h"
 
 
 using block_t = uint64_t;
 using block_size_t = uint16_t;
 
-using data_t = ImageDump::data_t;
+using data_t = std::vector<char>;
 
 #endif //FS_READER_TYPES_H
