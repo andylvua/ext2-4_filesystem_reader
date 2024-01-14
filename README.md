@@ -25,10 +25,11 @@ some filesystem information, etc.
 * `CMake` (version 3.15 or higher)
 * `boost::program_options` (version 1.76.0 or higher)
 * `fmt` (version 8.1.1 or higher)
+* `e2fsprogs` (version 1.46.5 or higher)
 
 > [!NOTE]
 >
-> For installation instructions, please refer to official documentation.
+> For installation instructions, please refer to the official documentation.
 
 ## Compilation
 
@@ -238,7 +239,7 @@ in the image.
 The `FilesystemDump` object is then used to construct the `Filesystem` object, which will be later used
 by the `FilesystemReader` class to read it.
 
-### Creating filesystem object
+### Creating a filesystem object
 
 The `Filesystem` class represents the filesystem itself. It holds two main objects: `FSInfo` and `Journal`.
 The journal will be discussed later, so let's take a look at the `FSInfo` class.
@@ -261,7 +262,7 @@ Here's a quick overview of these fields:
 #### Superblock
 
 The superblock is the most important part of the filesystem. It contains all important information about it,
-such as the block size, the number of inodes. it's state, features, etc.
+such as the block size, the number of inodes, its state, features, etc.
 
 The superblock is always located at the offset 1024 bytes from the beginning of the filesystem and takes
 exactly 1024 bytes. The superblock is represented by the `Superblock` class.
@@ -270,7 +271,7 @@ The block size is determined by the superblock.
 
 #### Descriptor table
 
-The descriptor table is a special structure that is used to define parameters of the filesystem block groups.
+The descriptor table is a special structure used to define parameters of the filesystem block groups.
 It provides the location of the inode bitmap and inode table, block bitmap, number of free blocks and inodes, 
 and some other useful information.
 
@@ -288,7 +289,7 @@ This is likely the outcome of the strong backward compatibility of the `ext` fam
 it is possible to mount `ext2` or `ext3` filesystem as `ext4`. `ext3` is even partially forward compatible
 with `ext4`, making it possible to mount `ext4` filesystem as `ext3` after disabling some features.
 
-This suggests us, that the filesystem type is effectively determined only by the features that are enabled
+This suggests to us that the filesystem type is effectively determined only by the features that are enabled
 for this particular filesystem. There is simply no other way to determine the filesystem type.
 
 The filesystem type is determined using the following algorithm:
@@ -299,7 +300,7 @@ Finally, if the filesystem has any unsupported `EXT3` features, the filesystem t
 
 > [!NOTE]
 > 
-> As there is no way to unequivocally determine the filesystem type. The detected filesystem type can be
+> As there is no way to unequivocally determine the filesystem type, the detected filesystem type can be
 > interpreted **only** as a suggestion for the user. The program itself always relies on the very specific
 > features it depends on only.
 
@@ -327,9 +328,9 @@ Now, let's take a closer look at each of these classes and related principles.
 
 The `Inode` class, as stated above, represents the inode of the filesystem. It mostly just wraps
 the pointer to the inode in the filesystem dump and provides some useful methods to access the inode
-metadata and it's contents.
+metadata and its contents.
 
-In order to find the inode in the filesystem dump, the following operations are performed:
+To find the inode in the filesystem dump, the following operations are performed:
 
 1. The inode number is converted to the inode index by subtracting 1 from it
 2. The inode index is divided by the number of inodes per group to get the group index
@@ -355,21 +356,22 @@ the data blocks are organized using the block tables.
 
 #### Block tables
 
-In this case, the blocks layout is organized using the direct and indirect (up to 3 levels) block tables.
+In this case, the block layout is organized using the direct and indirect (up to 3 levels) block tables.
 
 ![Block tables layout](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/images/Chapter12/12_09_UNIX_inode.jpg)
 
 _Source: [University of Illinois at Chicago](https://www.cs.uic.edu/~jbell/CourseNotes/OperatingSystems/12_FileSystemImplementation.html)_
 
 The first 12 entries of the inode block table are direct block pointers. The 13th entry is a single indirect block pointer,
-the 14th entry is a double indirect block pointer and the 15th entry is a triple indirect block pointer. 
+the 14th entry is a double indirect block pointer, and the 15th entry is a triple indirect block pointer. 
 
 The conversion between the inode logical block number and the physical block number is performed by the `Inode::logical_to_block` method.
 
 #### Extent tree
 
-In this case, the blocks layout is organized using the extent tree. The extent tree is a special tree structure
-that is used to store the data more efficiently. It was introduced in `ext4` to replace the block tables.
+In this case, the block layout is organized using the extent tree.
+The extent tree is a special tree structure used to store the data more efficiently.
+It was introduced in `ext4` to replace the block tables.
 Extent itself is just a contiguous block of data, which is represented by the start block number and the number
 of blocks in the extent.
 
@@ -433,10 +435,10 @@ in a single data block, or uses the `Inode::get_inline_data` method to read the 
 > [!NOTE]
 > 
 > Using the standard linked list directory format can become very slow once the number of files starts growing. 
-> To improve performances in such a system, modern filesystems use the indexed directory format, which allow 
+> To improve performance in such a system, modern filesystems use the indexed directory format, which allows  
 > them to quickly locate the particular file searched.
 > 
-> However, we decided to stick with the standard linked list directory format for 2 reasons:
+> However, we decided to stick with the standard linked list directory format for two reasons:
 > 1. It provides the most general approach to parsing the directory contents thanks to the backward compatibility.
 > That said, it requires a small amount of code to implement, therefore making the overall structure easier to understand.
 > 2. In any case, our implementation is only intended to be used for parsing the entire directory contents recursively,
@@ -458,7 +460,7 @@ field of the superblock. In most cases, it is equal to `8`.
 
 > [!IMPORTANT]
 > 
-> All fields of the journal is stored in the big-endian byte order, as opposed to the little-endian byte order
+> All fields of the journal are stored in the big-endian byte order, as opposed to the little-endian byte order
 > used by the rest of the filesystem. Due to this, there is a special `swap_endian` function that is used
 > to swap the endianness of the journal fields. It can be found in the `inc/utils/utils.h` file.
 
@@ -511,16 +513,16 @@ structure and provides the interface to access the transaction sequence number a
 #### Transactions
 
 The combination of the descriptor blocks, data blocks, and commit block is called a transaction. The `Journal`
-class provides the interface to get the transactions list from the filesystem journal. It works as follows:
+class provides the interface to get the transaction list from the filesystem journal. It works as follows:
 
 1. The `Journal` class reads the journal superblock and determines the journal features
 2. Then, it iterates over the blocks of the journal inode, keeping track of the current transaction
 3. If the current block is a descriptor block, the `Transaction` object is filled with the data from 
    the journal block tags, incorporating the `DescBlockIterator` class
-4. If the current block is a commit block, the `Transaction` object is marked as complete, the timestamp
-   and the sequence number are set, the transaction is added to the transactions list and the current transaction
+4. If the current block is a commit block, the `Transaction` object is marked as complete, the timestamp, 
+   and the sequence number is set, the transaction is added to the transaction list, and the current transaction
    is reset
-5. Repeat steps 3-4 until the end of the journal inode is reached
+5. Repeat steps 3–4 until the end of the journal inode is reached
 
 The transaction itself is represented by the `Transaction` class. It provides the interface to access necessary
 transaction information and contains the following fields:
@@ -537,7 +539,7 @@ Each block is represented by the `Transaction::block` structure. It contains the
 
 > [!TIP]
 > 
-> The transactions list can be displayed using the `-t` option. 
+> The transaction list can be displayed using the `-t` option. 
 > 
 > Also, the `-j` option can be used to display the journal superblock information.
 
@@ -552,8 +554,8 @@ FS Block      J Block     Timestamp                  Sequence
         81 -> 8           Mon Dec  4 20:38:02 2023   3
 ```
 
-The first column is the filesystem block number that was modified by the transaction.
-The second column is the corresponding journal block number which contains the modified block.
+The first column is the filesystem block number modified by the transaction.
+The second column is the corresponding journal block number that contains the modified block.
 Timestamp and sequence number are self-explanatory.
 
 ## References
