@@ -1,12 +1,8 @@
-# Lab work 9: Filesystem reader
-
-> Authors: Andrii Yaroshevych, Anastasiia Shvets
->
-> Filesystems: `ext2`, `ext3`, `ext4` (with journal support)
+# Filesystem reader
 
 # Description
 
-The goal of this lab work is to implement a program that can read a disk
+The goal of this project is to implement a program that can read a disk
 or partition image with a supported filesystem and display its contents,
 some filesystem information, etc.
 
@@ -112,7 +108,7 @@ Please refer to the [scripts/README.md](scripts/README.md) for more information.
 > 
 > This repository contains multiple images with different filesystems and partition tables for testing purposes.
 
-# Additional tasks
+# Features
 
 * [x] Support for `ext2/ext3/ext4` filesystems
 * [x] Journal support for `ext3/ext4` filesystems
@@ -310,7 +306,7 @@ This is the main part of the program. The `FilesystemReader` provides the interf
 print the desired information about the filesystem or its contents.
 
 We will focus on parsing the directory contents, as it is the most interesting part and actually
-the main task of this lab work.
+the main task of this project.
 
 ### General overview
 
@@ -453,7 +449,7 @@ in case of a system crash or power failure.
 The journal is represented by the `Journal` class. It provides the interface to read the journal contents
 and print the journal entries (transactions).
 
-In this lab work, we do not aim to implement the journal replaying, so the journal is read-only.
+In this project, we do not aim to implement the journal replaying, so the journal is read-only.
 
 The journal is located in the data blocks of the journal inode. The journal inode is determined by the `s_journal_inum`
 field of the superblock. In most cases, it is equal to `8`. 
